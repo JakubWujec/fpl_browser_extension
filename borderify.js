@@ -10,10 +10,13 @@ function makeBadge(text, color) {
 
     // Apply styles to the badge
     badge.style.display = 'inline-block';
-    badge.style.padding = '1px 1px';
-    badge.style.borderRadius = '2px';
+    badge.style.padding = '4px 1px';
+    badge.style.borderRadius = '4px';
+    badge.style.flexGrow = 1;
+    badge.style.textAlign = "center"
     badge.style.backgroundColor = color;
-    badge.style.color = '#fff';
+    badge.style.color = '#2E5D32';
+
     badge.style.fontSize = '9px';
 
     return badge;
@@ -28,6 +31,7 @@ function findTeamNameFromPlayerDiv(playerDiv) {
 function makeBar(children) {
     let row = document.createElement("div");
     row.style.display = "flex"
+    row.style.justifyContent = "space-between"
     row.style.flexWrap = "no wrap"
     for (let child of children) {
         row.appendChild(child)
@@ -48,34 +52,50 @@ async function fetchFixtures() {
 }
 
 const fetchData = async (url) => {
-    console.log("FETCHING MY FIREND");
     const response = await fetch(url)
     const data = await response.json()
     return data
 }
 
+function filterFixturesByTeamId(fixtures, teamId) {
+    return fixtures.filter(match => match.team_a === teamId || match.team_h === teamId).slice(0, 4);
+}
+
+function findTeamById(teamData, teamId) {
+    return teamData.find(team => team.id == teamId);
+}
+
+function getNextOpponents(fixtures, teamId) {
+    return fixtures
+        .filter(match => match.team_a === teamId || match.team_h === teamId)
+        .map(match => {
+            return match.team_a === teamId ? match.team_h : match.team_a;
+        })
+        .slice(0, 4);
+}
 
 
 
 async function start() {
     await new Promise(r => setTimeout(r, 2000));
     let playerDivs = document.getElementsByClassName(PLAYER_DIV_CLASS_NAME);
-    console.log("BEFORE BEFORE")
-    let teamData = await fetchTeamData();
+    let teamsData = await fetchTeamData();
     let fixtures = await fetchFixtures();
-    console.log("XXXXXXXXXXXXXXX")
     for (let playerDiv of playerDivs) {
+        playerDiv.style.border = "1px solid red";
         let teamName = findTeamNameFromPlayerDiv(playerDiv);
-        playerDiv.style.border = "2px solid red";
+        let currentPlayerTeam = teamsData.find(team => team.name == teamName);
+        let nextOpponentsIds = getNextOpponents(fixtures, currentPlayerTeam.id);
 
 
         playerDiv.appendChild(
-            makeBar([
-                makeBadge(teamName, "blue"),
-                makeBadge(teamName, "blue"),
-                makeBadge(teamName, "blue"),
-            ])
-        )
+            makeBar(
+                nextOpponentsIds.map(team_id =>
+                    makeBadge(findTeamById(teamsData, team_id).short_name, "lightblue")
+                )
+            )
+        );
+
     }
 }
 
