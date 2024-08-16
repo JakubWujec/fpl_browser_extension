@@ -1,8 +1,8 @@
 
-let PLAYER_DIV_CLASS_NAME = "styles__PitchElementWrap-sc-hv19ot-0 LEzSi";
-let FPL_API_LINK = "https://fantasy.premierleague.com/api/bootstrap-static/";
-
-const PLAYERS_DATA = [];
+const PLAYER_DIV_CLASS_NAME = "styles__PitchElementWrap-sc-hv19ot-0 LEzSi";
+const FPL_API_LINK = "https://fantasy.premierleague.com/api/bootstrap-static/";
+const CACHE_DURATION = 30 * 60 * 1000;
+const LOCAL_STORAGE_BASE_KEY = "FPL_FIREFOX_EXTENSION_";
 
 function makeBadge(text, color) {
     let badge = document.createElement("span")
@@ -41,13 +41,13 @@ function makeBar(children) {
 
 async function fetchTeamData() {
     const url = "https://fantasy.premierleague.com/api/bootstrap-static/"
-    const data = await fetchData(url)
+    const data = await withCache(fetchData)(url)
     return data["teams"];
 }
 
 async function fetchFixtures() {
     const url = "https://fantasy.premierleague.com/api/fixtures/";
-    const data = await fetchData(url);
+    const data = await withCache(fetchData)(url);
     return data;
 }
 
@@ -56,6 +56,34 @@ const fetchData = async (url) => {
     const data = await response.json()
     return data
 }
+
+const withCache = (fetchFunction) => {
+    return async (url) => {
+        const cacheKey = `${LOCAL_STORAGE_BASE_KEY}_${url}`;
+        const cacheTimestampKey = `${cacheKey}_timestamp`;
+
+        // Get cached data and timestamp
+        const cachedData = localStorage.getItem(cacheKey);
+        const cacheTimestamp = localStorage.getItem(cacheTimestampKey);
+
+        // Check if cached data exists and is within the cache duration
+        const now = new Date().getTime();
+
+        if (cachedData && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
+            return JSON.parse(cachedData);
+        }
+
+        // If no valid cache, fetch new data
+        const data = await fetchFunction(url);
+
+        // Store new data in localStorage with the current timestamp
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        localStorage.setItem(cacheTimestampKey, now.toString());
+
+        return data;
+    };
+};
+
 
 function filterFixturesByTeamId(fixtures, teamId) {
     return fixtures.filter(match => match.team_a === teamId || match.team_h === teamId).slice(0, 4);
