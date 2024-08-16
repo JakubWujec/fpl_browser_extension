@@ -11,10 +11,7 @@
             "js": [
                 "fpl_next_opponents.js"
             ],
-            "run_at": "document_end",
-            "permissions": [
-                "activeTab"
-            ]
+            "run_at": "document_end"
         }
     ]
 }

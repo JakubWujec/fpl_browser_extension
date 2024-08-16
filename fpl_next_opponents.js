@@ -1,6 +1,6 @@
 
 const PLAYER_DIV_CLASS_NAME = "styles__PitchElementWrap-sc-hv19ot-0 LEzSi";
-const FPL_API_LINK = "https://fantasy.premierleague.com/api/bootstrap-static/";
+const FPL_BASE_API_LINK = "https://fantasy.premierleague.com/api";
 const CACHE_DURATION = 60 * 60 * 1000;
 const LOCAL_STORAGE_BASE_KEY = "FPL_FIREFOX_EXTENSION_";
 const DIFFICULTY_COLORS = new Map([
@@ -19,16 +19,16 @@ function makeOpponentBadge(opponent) {
 
     badge.textContent = text
 
-    // Apply styles to the badge
-    badge.style.display = 'inline-block';
-    badge.style.padding = '4px 1px';
-    badge.style.borderRadius = '4px';
-    badge.style.flexGrow = 1;
-    badge.style.textAlign = "center"
-    badge.style.backgroundColor = backgroundColor;
-    badge.style.color = textColor;
-
-    badge.style.fontSize = '9px';
+    setStyles(badge, {
+        display: 'inline-block',
+        padding: '4px 1px',
+        borderRadius: '4px',
+        flexGrow: 1,
+        textAlign: 'center',
+        backgroundColor,
+        color: textColor,
+        fontSize: '9px',
+    });
 
     return badge;
 }
@@ -41,9 +41,11 @@ function findTeamNameFromPlayerDiv(playerDiv) {
 
 function makeBar(children) {
     let row = document.createElement("div");
-    row.style.display = "flex"
-    row.style.justifyContent = "space-between"
-    row.style.flexWrap = "no wrap"
+    setStyles(row, {
+        display: "flex",
+        justifyContent: "space-between",
+        flexWrap: "nowrap",
+    });
     for (let child of children) {
         row.appendChild(child)
     }
@@ -51,13 +53,13 @@ function makeBar(children) {
 }
 
 async function fetchTeamData() {
-    const url = "https://fantasy.premierleague.com/api/bootstrap-static/"
+    const url = `${FPL_BASE_API_LINK}/bootstrap-static/`
     const data = await withCache(fetchData)(url)
     return data["teams"];
 }
 
 async function fetchFixtures() {
-    const url = "https://fantasy.premierleague.com/api/fixtures/";
+    const url = `${FPL_BASE_API_LINK}/fixtures/`;
     const data = await withCache(fetchData)(url);
     return data;
 }
@@ -67,6 +69,11 @@ const fetchData = async (url) => {
     const data = await response.json()
     return data
 }
+
+const setStyles = (element, styles) => {
+    Object.assign(element.style, styles);
+};
+
 
 const withCache = (fetchFunction) => {
     return async (url) => {
@@ -130,17 +137,17 @@ async function start() {
     let teamsData = await fetchTeamData();
     let fixtures = await fetchFixtures();
     for (let playerDiv of playerDivs) {
-        playerDiv.style.border = "1px solid red";
         let teamName = findTeamNameFromPlayerDiv(playerDiv);
         let currentPlayerTeam = teamsData.find(team => team.name == teamName);
-        let nextOpponents = getNextOpponents(fixtures, teamsData, currentPlayerTeam.id);
 
-        playerDiv.appendChild(
-            makeBar(
-                nextOpponents.map(opponent => makeOpponentBadge(opponent))
-            )
-        );
-
+        if (currentPlayerTeam) {
+            let nextOpponents = getNextOpponents(fixtures, teamsData, currentPlayerTeam.id);
+            playerDiv.appendChild(
+                makeBar(
+                    nextOpponents.map(opponent => makeOpponentBadge(opponent))
+                )
+            );
+        }
     }
 }
 
