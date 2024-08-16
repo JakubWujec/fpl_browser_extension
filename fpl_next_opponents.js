@@ -63,7 +63,7 @@ async function fetchTeamData() {
 }
 
 async function fetchFixtures() {
-    const url = `${FPL_BASE_API_LINK}/fixtures/`;
+    const url = `${FPL_BASE_API_LINK}/fixtures/?future=1`;
     const data = await withCache(fetchData)(url);
     return data;
 }
