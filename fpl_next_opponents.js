@@ -1,11 +1,22 @@
 
 const PLAYER_DIV_CLASS_NAME = "styles__PitchElementWrap-sc-hv19ot-0 LEzSi";
 const FPL_API_LINK = "https://fantasy.premierleague.com/api/bootstrap-static/";
-const CACHE_DURATION = 30 * 60 * 1000;
+const CACHE_DURATION = 60 * 60 * 1000;
 const LOCAL_STORAGE_BASE_KEY = "FPL_FIREFOX_EXTENSION_";
+const DIFFICULTY_COLORS = new Map([
+    [1, '#375523'],
+    [2, '#01fc7a'],
+    [3, '#e7e7e7'],
+    [4, '#ff1751'],
+    [5, '#80072d'],
+]);
 
-function makeBadge(text, color) {
+function makeOpponentBadge(opponent) {
     let badge = document.createElement("span")
+    let text = opponent.short_name;
+    let backgroundColor = DIFFICULTY_COLORS.get(opponent.difficulty) ?? "lightblue"
+    let textColor = opponent.difficulty <= 3 ? "darkblue" : "white"
+
     badge.textContent = text
 
     // Apply styles to the badge
@@ -14,8 +25,8 @@ function makeBadge(text, color) {
     badge.style.borderRadius = '4px';
     badge.style.flexGrow = 1;
     badge.style.textAlign = "center"
-    badge.style.backgroundColor = color;
-    badge.style.color = '#2E5D32';
+    badge.style.backgroundColor = backgroundColor;
+    badge.style.color = textColor;
 
     badge.style.fontSize = '9px';
 
@@ -85,21 +96,30 @@ const withCache = (fetchFunction) => {
 };
 
 
-function filterFixturesByTeamId(fixtures, teamId) {
-    return fixtures.filter(match => match.team_a === teamId || match.team_h === teamId).slice(0, 4);
-}
-
 function findTeamById(teamData, teamId) {
     return teamData.find(team => team.id == teamId);
 }
 
-function getNextOpponents(fixtures, teamId) {
-    return fixtures
-        .filter(match => match.team_a === teamId || match.team_h === teamId)
-        .map(match => {
-            return match.team_a === teamId ? match.team_h : match.team_a;
-        })
-        .slice(0, 4);
+function getNextOpponents(fixtures, teamsData, teamId) {
+    let result = [];
+    let next4Fixtures = fixtures.filter(match => match.team_a === teamId || match.team_h === teamId).slice(0, 4);
+
+    for (let fixture of next4Fixtures) {
+        let atHome = fixture.team_h === teamId;
+        let difficulty = atHome ? fixture.team_h_difficulty : fixture.team_a_difficulty;
+        let opponentTeamId = teamId === fixture.team_h ? fixture.team_a : fixture.team_h;
+        let opponentTeam = findTeamById(teamsData, opponentTeamId);
+
+        let opponent = {
+            short_name: opponentTeam.short_name,
+            teamId: opponentTeamId,
+            difficulty,
+            atHome,
+        }
+        result.push(opponent)
+    }
+
+    return result;
 }
 
 
@@ -113,14 +133,11 @@ async function start() {
         playerDiv.style.border = "1px solid red";
         let teamName = findTeamNameFromPlayerDiv(playerDiv);
         let currentPlayerTeam = teamsData.find(team => team.name == teamName);
-        let nextOpponentsIds = getNextOpponents(fixtures, currentPlayerTeam.id);
-
+        let nextOpponents = getNextOpponents(fixtures, teamsData, currentPlayerTeam.id);
 
         playerDiv.appendChild(
             makeBar(
-                nextOpponentsIds.map(team_id =>
-                    makeBadge(findTeamById(teamsData, team_id).short_name, "lightblue")
-                )
+                nextOpponents.map(opponent => makeOpponentBadge(opponent))
             )
         );
 
