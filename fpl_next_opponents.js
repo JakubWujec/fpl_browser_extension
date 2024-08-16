@@ -16,7 +16,7 @@ function makeOpponentBadge(opponent) {
     let text = opponent.short_name;
     let backgroundColor = DIFFICULTY_COLORS.get(opponent.difficulty) ?? "lightblue"
     let textColor = opponent.difficulty <= 3 ? "darkblue" : "white"
-    let fontWeight = opponent.atHome ? "bolder" : "normal"
+    let fontWeight = opponent.atHome ? 900 : 300
     badge.textContent = text
 
     setStyles(badge, {
