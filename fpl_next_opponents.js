@@ -1,5 +1,7 @@
 
 const PLAYER_DIV_CLASS_NAME = "styles__PitchElementWrap-sc-hv19ot-0 LEzSi";
+const PITCH_CLASS_NAME = "sc-bdnxRM ggOnwe";
+const BADGE_BAR_CLASS_NAME = "FPL_EXTENSION_BADGE_BAR";
 const FPL_BASE_API_LINK = "https://fantasy.premierleague.com/api";
 const CACHE_DURATION = 60 * 60 * 1000;
 const LOCAL_STORAGE_BASE_KEY = "FPL_FIREFOX_EXTENSION_";
@@ -42,6 +44,7 @@ function findTeamNameFromPlayerDiv(playerDiv) {
 
 function makeBar(children) {
     let row = document.createElement("div");
+
     setStyles(row, {
         display: "flex",
         justifyContent: "space-between",
@@ -130,10 +133,7 @@ function getNextOpponents(fixtures, teamsData, teamId) {
     return result;
 }
 
-
-
-async function start() {
-    await new Promise(r => setTimeout(r, 2000));
+async function buildBadgeBars() {
     let playerDivs = document.getElementsByClassName(PLAYER_DIV_CLASS_NAME);
     let teamsData = await fetchTeamData();
     let fixtures = await fetchFixtures();
@@ -153,6 +153,47 @@ async function start() {
 }
 
 
+async function start() {
+    await new Promise(r => setTimeout(r, 1000));
+    setupObserver();
+    await buildBadgeBars();
+}
+
+
+function setupObserver() {
+    const pitchElements = document.getElementsByClassName(PITCH_CLASS_NAME);
+    if (pitchElements.item(0) != null) {
+        console.log("Element found, setting up observer.");
+
+        const targetNode = pitchElements[0].parentElement;
+        const config = { attributes: true, childList: true, subtree: true };
+
+        // Callback function to execute when mutations are observed
+        const callback = (mutationList, observer) => {
+            console.log("Mutations observed.");
+            for (const mutation of mutationList) {
+                if (mutation.type === "attributes") {
+                    console.log(`The ${mutation.attributeName} attribute was modified.`);
+                    console.log(mutation.target.dataset.testid)
+
+                    if (mutation.target.dataset.testid === 'pitch') {
+                        buildBadgeBars();
+                    }
+
+                }
+                console.log("Mutation:", mutation)
+
+                break;
+            }
+        };
+
+        const observer = new MutationObserver(callback);
+        observer.observe(targetNode, config);
+
+        // Call observer.disconnect() only when needed
+        // observer.disconnect();
+    }
+}
 
 start();
 
