@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
-    "name": "Borderify",
+    "name": "Fpl next opponents",
     "version": "1.0",
-    "description": "Adds a red border to all webpages matching mozilla.org.",
+    "description": "Add bar with next oponnents to a FPL player",
     "icons": {
         "48": "icons/border-48.png",
         "96": "icons/border-96.png"
@@ -13,7 +13,7 @@
                 "https://fantasy.premierleague.com/my-team"
             ],
             "js": [
-                "borderify.js"
+                "fpl_next_opponents.js"
             ],
             "run_at": "document_end"
         }
