@@ -3,10 +3,6 @@
     "name": "Fpl next opponents",
     "version": "1.0",
     "description": "Add bar with next oponnents to a FPL player",
-    "icons": {
-        "48": "icons/border-48.png",
-        "96": "icons/border-96.png"
-    },
     "content_scripts": [
         {
             "matches": [
@@ -15,7 +11,10 @@
             "js": [
                 "fpl_next_opponents.js"
             ],
-            "run_at": "document_end"
+            "run_at": "document_end",
+            "permissions": [
+                "activeTab"
+            ]
         }
     ]
 }
