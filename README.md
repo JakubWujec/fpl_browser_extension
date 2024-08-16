@@ -2,7 +2,7 @@
 
 This is a Firefox browser extension designed to enhance your Fantasy Premier League (FPL) experience by displaying the next four opponents for each player in your team. The extension adds a small badge below each player on the "My Team" page, indicating the upcoming fixtures and their respective difficulty levels.
 
-![obraz](https://github.com/user-attachments/assets/505223af-de4b-4208-bd66-dadddfc4adc6)
+![obraz](https://github.com/user-attachments/assets/b5817867-9db0-4c4e-9534-e0cf1bac3721)
 
 ## Installation
 1. Clone the repository to your local machine:
