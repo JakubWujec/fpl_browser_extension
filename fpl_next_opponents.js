@@ -1,6 +1,6 @@
 
 const PLAYER_DIV_CLASS_NAME = "styles__PitchElementWrap-sc-hv19ot-0 LEzSi";
-const PITCH_CLASS_NAME = "sc-bdnxRM ggOnwe";
+const ROOT_ID = 'root';
 const BADGE_BAR_CLASS_NAME = "FPL_EXTENSION_BADGE_BAR";
 const FPL_BASE_API_LINK = "https://fantasy.premierleague.com/api";
 const CACHE_DURATION = 60 * 60 * 1000;
@@ -12,6 +12,7 @@ const DIFFICULTY_COLORS = new Map([
     [4, '#ff1751'],
     [5, '#80072d'],
 ]);
+
 
 function makeOpponentBadge(opponent) {
     let badge = document.createElement("span")
@@ -161,39 +162,34 @@ async function start() {
 
 
 function setupObserver() {
-    const pitchElements = document.getElementsByClassName(PITCH_CLASS_NAME);
-    if (pitchElements.item(0) != null) {
-        console.log("Element found, setting up observer.");
+    const rootElement = document.getElementById(ROOT_ID);
+    if (rootElement != null) {
 
-        const targetNode = pitchElements[0].parentElement;
+        const targetNode = rootElement
         const config = { attributes: true, childList: true, subtree: true };
 
         // Callback function to execute when mutations are observed
         const callback = (mutationList, observer) => {
-            console.log("Mutations observed.");
+
             for (const mutation of mutationList) {
                 if (mutation.type === "attributes") {
-                    console.log(`The ${mutation.attributeName} attribute was modified.`);
-                    console.log(mutation.target.dataset.testid)
-
                     if (mutation.target.dataset.testid === 'pitch') {
+                        console.log("XX", mutation);
                         buildBadgeBars();
+                        break;
                     }
 
                 }
-                console.log("Mutation:", mutation)
-
-                break;
             }
+
         };
 
         const observer = new MutationObserver(callback);
         observer.observe(targetNode, config);
 
-        // Call observer.disconnect() only when needed
-        // observer.disconnect();
     }
 }
+
 
 start();
 
